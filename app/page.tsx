@@ -2,7 +2,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, FolderKanban, TrendingUp, ArrowRight } from "lucide-react"
+import { Users, FolderKanban, TrendingUp, ArrowRight, Calendar, MapPin, Clock } from "lucide-react"
+import type { Post } from "@/types"
 
 export default function Home() {
   // TODO: 실제 데이터는 Supabase에서 가져올 예정
@@ -10,6 +11,84 @@ export default function Home() {
     activeMembers: 1250,
     activeProjects: 342,
     matchRate: 87.5,
+  }
+
+  // 더미 게시글 데이터
+  const dummyPosts: Post[] = [
+    {
+      id: "1",
+      title: "Next.js와 TypeScript로 풀스택 프로젝트 함께할 팀원 모집",
+      category: "Development",
+      summary: "Next.js 14 App Router와 TypeScript를 활용한 웹 애플리케이션 개발 프로젝트입니다. 프론트엔드와 백엔드를 함께 다루며 실무 경험을 쌓을 수 있습니다.",
+      content: "상세 내용...",
+      tags: {
+        technologies: ["Next.js", "TypeScript", "React", "Tailwind CSS"],
+        days: ["월", "수", "금"],
+        location: "온라인",
+        duration: "3개월",
+      },
+      contact: "https://open.kakao.com/o/example1",
+      status: "recruiting",
+      user_id: "user-1",
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "2",
+      title: "알고리즘 스터디 모집 - 백준/프로그래머스 함께 풀어요",
+      category: "Study",
+      summary: "코딩 테스트 준비를 위한 알고리즘 스터디입니다. 매주 정해진 문제를 풀고 함께 리뷰하며 실력을 향상시켜 나갑니다.",
+      content: "상세 내용...",
+      tags: {
+        technologies: ["Python", "Java", "C++"],
+        days: ["화", "목"],
+        location: "서울 강남구",
+        duration: "장기",
+      },
+      contact: "https://open.kakao.com/o/example2",
+      status: "recruiting",
+      user_id: "user-2",
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "3",
+      title: "포트폴리오 웹사이트 제작 사이드 프로젝트",
+      category: "Project",
+      summary: "개인 포트폴리오 웹사이트를 제작하는 사이드 프로젝트입니다. 디자인부터 개발까지 전 과정을 함께 진행합니다.",
+      content: "상세 내용...",
+      tags: {
+        technologies: ["React", "Framer Motion", "Three.js"],
+        days: ["토", "일"],
+        location: "온라인",
+        duration: "2개월",
+      },
+      contact: "https://open.kakao.com/o/example3",
+      status: "recruiting",
+      user_id: "user-3",
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ]
+
+  // 카테고리 한글 변환 함수
+  const getCategoryLabel = (category: Post["category"]) => {
+    const labels = {
+      Development: "개발",
+      Study: "스터디",
+      Project: "사이드 프로젝트",
+    }
+    return labels[category]
+  }
+
+  // 날짜 포맷 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) return "오늘"
+    if (diffDays === 1) return "어제"
+    if (diffDays < 7) return `${diffDays}일 전`
+    return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" })
   }
 
   return (
@@ -161,6 +240,96 @@ export default function Home() {
               </CardContent>
             </Link>
           </Card>
+        </div>
+      </section>
+
+      {/* Recent Posts Section */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">최근 모집글</h2>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/studies">
+              전체 보기
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {dummyPosts.map((post) => (
+            <Card key={post.id} className="hover:shadow-md transition-shadow">
+              <Link href={`/studies/${post.id}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <Badge
+                      variant={
+                        post.status === "recruiting" ? "default" : "secondary"
+                      }
+                      className="text-xs"
+                    >
+                      {post.status === "recruiting" ? "모집중" : "모집완료"}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {getCategoryLabel(post.category)}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-base line-clamp-2 mb-2">
+                    {post.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm line-clamp-2">
+                    {post.summary}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* 기술 스택 태그 */}
+                  {post.tags.technologies && post.tags.technologies.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {post.tags.technologies.slice(0, 3).map((tech, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {tech}
+                        </Badge>
+                      ))}
+                      {post.tags.technologies.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{post.tags.technologies.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 상세 정보 */}
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {post.tags.days && post.tags.days.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{post.tags.days.join(", ")}</span>
+                      </div>
+                    )}
+                    {post.tags.location && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{post.tags.location}</span>
+                      </div>
+                    )}
+                    {post.tags.duration && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{post.tags.duration}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 작성일 */}
+                  <div className="text-xs text-muted-foreground pt-1 border-t">
+                    {formatDate(post.created_at)}
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
+          ))}
         </div>
       </section>
 
